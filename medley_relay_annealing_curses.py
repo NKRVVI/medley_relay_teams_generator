@@ -5,7 +5,7 @@ import math
 import itertools
 import curses
 import os
-import time
+from openpyxl.styles import Alignment, Font
 
 
 # this class takes in a text file and extracts the swimmer information from it
@@ -19,8 +19,8 @@ class InputProcessor:
         dummy_timings = []
 
         for row in self.file.iter_rows(2, self.file.max_row):
-            runner_details = [row[0].value]
-            for i in range(1, 5):
+            runner_details = [row[1].value]
+            for i in range(2, 6):
                 runner_details.append(self.get_seconds(row[i].value))
             dummy_timings.append(runner_details)
         return dummy_timings
@@ -28,8 +28,8 @@ class InputProcessor:
     def get_num_teams(self):
         division_size = []
         index = 2
-        while self.file.cell(row=index, column=8).value is not None:
-            division_size.append(self.file.cell(row=index, column=8).value)
+        while self.file.cell(row=index, column=9).value is not None:
+            division_size.append(self.file.cell(row=index, column=9).value)
             index += 1
         return division_size
 
@@ -217,7 +217,6 @@ def main():
 
     information = InputProcessor(str(path))
     reset_time = 2
-
     num_competitive_runners = sum([no_of_teams for no_of_teams in information.num_teams]) * 4
 
     final_divisions = []
@@ -308,18 +307,53 @@ def main():
     if answer == '':
         answer = "teams.xlsx"
 
+    sheet.merge_cells('A1:P1')
+    sheet.cell(row = 1, column=1).value = 'J.S.A.S.A'
+    sheet.cell(row = 1, column = 1).alignment = Alignment(horizontal='center')
+    sheet.cell(row = 1, column = 1).font = Font(name = "Courier New", size=10, bold=True)
+
+    sheet.merge_cells('A2:P2')
+    sheet.cell(row = 2, column = 1).value = 'Department of Physical Education'
+    sheet.cell(row = 2, column = 1).alignment = Alignment(horizontal = 'center')
+    sheet.cell(row = 2, column = 1).font = Font(name = "Courier New", size=10, bold=True)
+
+    sheet.merge_cells('A3:P3')
+    sheet.cell(row = 3, column = 1).value = "MEN'S AQUATICS -- "
+    sheet.cell(row = 3, column = 1).alignment = Alignment(horizontal = 'center')
+    sheet.cell(row = 3, column = 1).font = Font(name = "Courier New", size=14, bold=True)
+
+    sheet.merge_cells('A5:P5')
+    sheet.cell(row=5, column=1).value = "TEAMS FOR MEDLEY RELAY"
+    sheet.cell(row = 5, column = 1).alignment = Alignment(horizontal = 'center')
+    sheet.cell(row = 5, column = 1).font = Font(name = "Calibri", size=14, bold=True)
+
+
+
+
     races = ["Back", "Breast", "B-fly", "Crawl"]
+    lane_order = [3,4,2,5,1,6]
+    section_len = 10
+    header_offset = 6
     for index, division in enumerate(final_divisions):
-        sheet.cell(row=index * 6 + 1, column=1).value = "Division " + str(index + 1)
+        sheet.cell(row=index * section_len + 1 + header_offset, column=1).value = "Division " + str(index + 1)
+        sheet.cell(row=index * section_len + 1 + header_offset, column=1).font = Font(bold = True)
+        current_lanes = lane_order[0:information.num_teams[index]]
+        current_lanes.sort()
+        for i in range(information.num_teams[index]):
+            sheet.cell(row=index * section_len + 2 + header_offset, column=i* 3 + 3).value = "LANE" + str(current_lanes[i])
+
         for k in range(5):
             if k < 4:
-                sheet.cell(row = index * 6 + k + 2, column = 1).value = races[k]
+                sheet.cell(row = index * section_len + k + 4 + header_offset, column = 1).value = races[k]
             for l in range(information.num_teams[index]):
                 if k < 4:
-                    sheet.cell(row=index * 6 + k + 2, column=l * 3 + 3).value = division[l * 4 + k][0]
-                    sheet.cell(row=index * 6 + k + 2, column=l * 3 + 4).value = division[l * 4 + k][k + 1]
+                    sheet.cell(row=index * section_len + k + 4 + header_offset, column=l * 3 + 3).value = division[l * 4 + k][0]
+                    sheet.cell(row=index * section_len + k + 4 + header_offset, column=l * 3 + 4).value = division[l * 4 + k][k + 1]
                 else:
-                    sheet.cell(row=index * 6 + k + 2, column=l * 3 + 4).value = get_timings(division, information, index)[l]
+                    sheet.cell(row=index * section_len + k + 4 + header_offset, column=l * 3 + 4).value = get_timings(division, information, index)[l]
+            sheet.cell(row = index * section_len + 5 + 4 + header_offset, column=1).value = 'RESULTS:'
+            sheet.cell(row=index * section_len + 5 + 4 + header_offset, column=1).font = Font(bold = True)
+
     wb.save(answer)
 
     screen.clear()

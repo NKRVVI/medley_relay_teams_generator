@@ -1,4 +1,4 @@
-('C:\\Users\\naren\\onedrive\\desktop\\medley_program\\build\\medley_relay_annealing_curses\\PYZ-00.pyz',
+('C:\\Users\\naren\\onedrive\\desktop\\medley_relay_teams_generator\\build\\medley_relay_annealing_curses\\PYZ-00.pyz',
  [('PIL',
    'C:\\Users\\naren\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\PIL\\__init__.py',
    'PYMODULE'),
